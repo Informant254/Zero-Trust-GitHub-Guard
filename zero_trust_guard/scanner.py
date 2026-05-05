@@ -12,23 +12,31 @@ class SecretScanner:
             "OpenAI API Key": r"sk-[a-zA-Z0-9]{48}",
             "Anthropic API Key": r"sk-ant-api03-[a-zA-Z0-9-_]{93}ak-ant-api03-[a-zA-Z0-9-_]{93}",
         }
+        self.skip_dirs = {'.git', 'node_modules', '__pycache__', '.venv', 'env', 'venv', 'dist', 'build'}
 
     def scan_file(self, file_path):
         findings = []
         try:
+            # Only scan text-based files and limit size to 1MB for speed
+            if os.path.getsize(file_path) > 1024 * 1024:
+                return []
+                
             with open(file_path, 'r', errors='ignore') as f:
                 content = f.read()
                 for name, pattern in self.patterns.items():
                     matches = re.findall(pattern, content)
                     if matches:
                         findings.append({"type": name, "count": len(matches)})
-        except Exception as e:
+        except Exception:
             pass
         return findings
 
     def scan_directory(self, directory):
         report = {}
-        for root, _, files in os.walk(directory):
+        for root, dirs, files in os.walk(directory):
+            # Efficiently skip blacklisted directories
+            dirs[:] = [d for d in dirs if d not in self.skip_dirs]
+            
             for file in files:
                 path = os.path.join(root, file)
                 findings = self.scan_file(path)
