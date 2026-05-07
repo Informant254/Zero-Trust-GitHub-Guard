@@ -1,0 +1,13 @@
+.quarantine/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+build/
+dist/
+*.egg-info/
+.venv/
+venv/
+env/

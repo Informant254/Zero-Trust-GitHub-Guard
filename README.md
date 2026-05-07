@@ -2,8 +2,9 @@
 
 [![Stars](https://img.shields.io/github/stars/Informant254/Zero-Trust-GitHub-Guard?style=social)](https://github.com/Informant254/Zero-Trust-GitHub-Guard/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Defensive Excellence](https://img.shields.io/badge/Defensive%20Excellence-dry--run%20fixes%20%7C%20line%20evidence-green)](https://github.com/Informant254/Zero-Trust-GitHub-Guard)
 
-**Advanced security scanner for detecting exposed API keys and hardening GitHub account permissions.**
+**A defensive secret scanner for developers who want fast local evidence, dry-run remediation, and safer credential cleanup before code reaches GitHub.**
 
 ## 🚀 Quick Start
 
@@ -22,12 +23,40 @@ Scan your current directory for secrets:
 zero-trust-guard scan
 ```
 
+Scan a specific path:
+```bash
+zero-trust-guard scan path/to/project
+```
+
+Preview remediation actions:
+```bash
+zero-trust-guard fix
+```
+
+Apply an interactive remediation:
+```bash
+zero-trust-guard fix --apply
+```
+
 ## ✨ Features
 
-- **🔍 Multi-Provider Scanning**: Detects keys for Google, AWS, Stripe, OpenAI, Anthropic, and more.
-- **📱 Termux Optimized**: Lightweight and fast, designed to run perfectly on mobile devices.
-- **🛡️ Zero-Trust Architecture**: Ensures your development environment is secure from the ground up.
-- **📊 Detailed Reporting**: Provides clear, actionable tables of any security risks found.
+- **Multi-Provider Scanning**: Detects common tokens for Google, AWS, Stripe, GitHub, Slack, OpenAI, Anthropic, and more.
+- **Dry-Run Fix Mode**: Shows remediation options first and requires `--apply` before changing files.
+- **Line-Level Evidence**: Reports file paths, secret types, counts, and line numbers without printing secret values.
+- **Safe Redaction**: Replaces detected values with `[REDACTED]`.
+- **Quarantine Workflow**: Moves risky files into `.quarantine/` with collision-safe names.
+- **Small Runtime Footprint**: Uses a minimal dependency set for local and mobile-friendly scanning.
+
+## 🔐 Defensive Defaults
+
+- Skips `.git`, dependency folders, caches, build outputs, and symlinked files.
+- Limits scanned files to 1 MB by default to keep scans fast and predictable.
+- Redacts matched secrets as `[REDACTED]` instead of exposing values in output.
+- Keeps quarantine output in `.quarantine/`, which is ignored by Git.
+
+## ⚠️ Secret Handling
+
+If a real key was committed, redaction is not enough. Rotate or revoke the key with the provider, then remove it from Git history if required by your incident process.
 
 ## 🤝 Contributing
 
