@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from zero_trust_guard.scanner import SecretScanner
+from zero_trust_guard.main import report_to_json
 
 
 class SecretScannerTests(unittest.TestCase):
@@ -66,6 +67,23 @@ class SecretScannerTests(unittest.TestCase):
             os.symlink(target, link)
 
             self.assertEqual(scanner.scan_file(link), [])
+
+    def test_json_report_never_contains_secret_values(self):
+        report = {
+            "config.txt": [
+                {
+                    "type": "OpenAI API Key",
+                    "count": 1,
+                    "lines": [3],
+                }
+            ]
+        }
+
+        serialized = report_to_json(report)
+
+        self.assertEqual(serialized[0]["path"], "config.txt")
+        self.assertEqual(serialized[0]["lines"], [3])
+        self.assertNotIn("value", serialized[0])
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import shutil
 from pathlib import Path
@@ -26,6 +27,21 @@ def render_report(report):
     console.print(table)
 
 
+def report_to_json(report):
+    serializable = []
+    for path, findings in sorted(report.items()):
+        for finding in findings:
+            serializable.append(
+                {
+                    "path": path,
+                    "type": finding["type"],
+                    "count": finding["count"],
+                    "lines": finding.get("lines", []),
+                }
+            )
+    return serializable
+
+
 def quarantine_path(path):
     q_dir = Path(".quarantine")
     q_dir.mkdir(exist_ok=True)
@@ -44,6 +60,17 @@ def main():
 
     subparsers.add_parser("init", help="Initialize security scan")
     scan_parser = subparsers.add_parser("scan", help="Scan current directory for secrets")
+    scan_parser.add_argument(
+        "--format",
+        choices=("table", "json"),
+        default="table",
+        help="Output format",
+    )
+    scan_parser.add_argument(
+        "--fail-on-findings",
+        action="store_true",
+        help="Exit with status 1 when secrets are found",
+    )
     scan_parser.add_argument("path", nargs="?", default=".", help="Directory or file to scan")
     fix_parser = subparsers.add_parser("fix", help="Interactively fix discovered leaks")
     fix_parser.add_argument("path", nargs="?", default=".", help="Directory or file to scan")
@@ -60,16 +87,21 @@ def main():
         console.print("System check complete. Ready to protect your repositories.")
     elif args.command == "scan":
         scanner = SecretScanner()
-        console.print("[bold blue]Scanning for exposed secrets...[/bold blue]")
+        if args.format == "table":
+            console.print("[bold blue]Scanning for exposed secrets...[/bold blue]")
         target = args.path
         report = {target: scanner.scan_file(target)} if os.path.isfile(target) else scanner.scan_directory(target)
         report = {path: findings for path, findings in report.items() if findings}
         
-        if not report:
+        if args.format == "json":
+            print(json.dumps({"findings": report_to_json(report)}, indent=2))
+        elif not report:
             console.print("[bold green]No secrets found. Your repository is clean.[/bold green]")
         else:
             render_report(report)
             console.print("\n[bold yellow]Tip: Run 'zero-trust-guard fix --apply' to secure these leaks.[/bold yellow]")
+        if report and args.fail_on_findings:
+            raise SystemExit(1)
             
     elif args.command == "fix":
         scanner = SecretScanner()

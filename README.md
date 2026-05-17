@@ -28,6 +28,11 @@ Scan a specific path:
 zero-trust-guard scan path/to/project
 ```
 
+Emit JSON for CI or scripts:
+```bash
+zero-trust-guard scan --format json --fail-on-findings .
+```
+
 Preview remediation actions:
 ```bash
 zero-trust-guard fix
@@ -46,6 +51,7 @@ zero-trust-guard fix --apply
 - **Safe Redaction**: Replaces detected values with `[REDACTED]`.
 - **Quarantine Workflow**: Moves risky files into `.quarantine/` with collision-safe names.
 - **Small Runtime Footprint**: Uses a minimal dependency set for local and mobile-friendly scanning.
+- **CI-Friendly Output**: JSON output and `--fail-on-findings` support automation without exposing secret values.
 
 ## 🔐 Defensive Defaults
 
@@ -53,6 +59,7 @@ zero-trust-guard fix --apply
 - Limits scanned files to 1 MB by default to keep scans fast and predictable.
 - Redacts matched secrets as `[REDACTED]` instead of exposing values in output.
 - Keeps quarantine output in `.quarantine/`, which is ignored by Git.
+- Documents assumptions and limits in [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md).
 
 ## ⚠️ Secret Handling
 
